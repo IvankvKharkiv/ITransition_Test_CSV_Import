@@ -8,5 +8,5 @@
 /var/
 /vendor/
 /.idea
-/tool
+/tools
 ###< symfony/framework-bundle ###

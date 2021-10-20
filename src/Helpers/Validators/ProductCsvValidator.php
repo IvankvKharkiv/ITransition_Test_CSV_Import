@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helpers\Validators;
 
 class ProductCsvValidator
 {
-    const DISCONTINUED = 'yes';
+    public const DISCONTINUED = 'yes';
     /*
      * in real project I would have used google API to calculate GBPTOUSD
      * */
-    const GBPTOUSD = 1.37;
+    public const GBPTOUSD = 1.37;
 
     /**
      * Validates the given in array data.
@@ -17,7 +19,8 @@ class ProductCsvValidator
      *
      * @return array<string, int>|null
      */
-    public static function validate(array $productData){
+    public static function validate(array $productData)
+    {
         $errorMassage = '';
         if (!isset($productData['Product Code'])) {
             $errorMassage = $errorMassage . 'Product code is not set. ';
@@ -31,7 +34,7 @@ class ProductCsvValidator
             $errorMassage = $errorMassage . 'Product description is not set. ';
         }
 
-        if (isset($productData['Stock']) && $productData['Stock'] != '') {
+        if (isset($productData['Stock']) && $productData['Stock'] !== '') {
             if (!is_numeric($productData['Stock'])) {
                 $errorMassage = $errorMassage . 'Product stock is not a number. Given "' . $productData['Stock'] . '" ';
             }
@@ -40,28 +43,26 @@ class ProductCsvValidator
         if (isset($productData['Cost in GBP'])) {
             if (!is_numeric($productData['Cost in GBP'])) {
                 $errorMassage = $errorMassage . 'Product price (Cost in GBP) is not a number. Given "' . $productData['Cost in GBP'] . '" ';
-            } elseif ((floatval($productData['Cost in GBP'])*self::GBPTOUSD) < 5 && isset($productData['Stock']) && is_numeric($productData['Stock']) && intval($productData['Stock']) < 10) {
+            } elseif ((floatval($productData['Cost in GBP']) * self::GBPTOUSD) < 5 && isset($productData['Stock']) && is_numeric($productData['Stock']) && intval($productData['Stock']) < 10) {
                 $errorMassage = $errorMassage . 'Product price (Cost in GBP) is less than 5$ and less than 10pcs in stock. ';
-            } elseif ((floatval($productData['Cost in GBP'])*self::GBPTOUSD) > 1000) {
+            } elseif ((floatval($productData['Cost in GBP']) * self::GBPTOUSD) > 1000) {
                 $errorMassage = $errorMassage . 'Product price (Cost in GBP) is more than 1000$. ';
             }
         } else {
-            $errorMassage = $errorMassage . 'Product price (Cost in GBP) can\'t me empty. ';
+            $errorMassage = $errorMassage . 'Product price (Cost in GBP) can\'t be empty. ';
         }
 
-        if (isset($productData['Discontinued']) && $productData['Discontinued'] != '') {
-            if ( strcasecmp($productData['Discontinued'], self::DISCONTINUED) != 0 ) {
-                $errorMassage = $errorMassage . 'Product discontinued must be \'yes\' or nothing. Value "' . $productData['Discontinued']  . '" is given. ';
+        if (isset($productData['Discontinued']) && $productData['Discontinued'] !== '') {
+            if (strcasecmp($productData['Discontinued'], self::DISCONTINUED) !== 0) {
+                $errorMassage = $errorMassage . 'Product discontinued must be \'yes\' or nothing. Value "' . $productData['Discontinued'] . '" is given. ';
             }
         }
 
-        if ($errorMassage == '') {
+        if ($errorMassage === '') {
             return null;
-        } else {
-            $productData['error'] = $errorMassage;
-            return $productData;
         }
+        $productData['error'] = $errorMassage;
 
+        return $productData;
     }
-
 }

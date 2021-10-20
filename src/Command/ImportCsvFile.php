@@ -1,104 +1,141 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Helpers\Savers\ProductCsvSaver;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Console\Input\InputArgument;
-use App\Entity\Tblproductdata;
-use Doctrine\ORM\EntityManagerInterface;
-
-
-
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class ImportCsvFile extends Command
 {
+    public const CSV_FILE_TYPE = 'CSV';
 
-    /**
-     * @var EntityManagerInterface
-     */
-    protected $em;
+    public static array $availableFileTypes = [
+        self::CSV_FILE_TYPE,
+    ];
 
-    public function __construct(EntityManagerInterface $em)
+    protected static $defaultName = 'app:product-data:import';
+    private string $fileTypeList = '';
+    private ProductCsvSaver $productCsvSaver;
+    private SerializerInterface $serializer;
+
+    public function __construct(ProductCsvSaver $productCsvSaver, SerializerInterface $serializer)
     {
-        $this->em = $em;
+        $this->serializer = $serializer;
+        $this->productCsvSaver = $productCsvSaver;
         parent::__construct();
+        foreach (self::$availableFileTypes as $fileType) {
+            $this->fileTypeList = $this->fileTypeList . ($this->fileTypeList ? ', ' : '') . $fileType;
+        }
     }
-
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'app:import-csv-file';
 
     protected function configure(): void
     {
-        $this->addArgument('filename', InputArgument::REQUIRED, 'Full path to .csv file which needs to be parsed.');
-        $this->addOption('test', 't', null, 'Run command in test mode without saving data to DB.');
+        $this->addArgument(
+            'filename',
+            InputArgument::REQUIRED,
+            'Full path to .csv file which needs to be parsed.'
+        );
+        $this->addOption(
+            'test',
+            't',
+            null,
+            'Run command in test mode without saving data to DB.'
+        );
+
+        $this->addOption(
+            'filetype',
+            'ft',
+            InputOption::VALUE_REQUIRED,
+            'Specify file type. Available file types: ' . $this->fileTypeList,
+            'CSV'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
 
-        $csvEncoder = new CsvEncoder();
-        $productCsvSaver = new ProductCsvSaver($this->em);
+        if (in_array($input->getOption('filetype'), self::$availableFileTypes)) {
+            switch ($input->getOption('filetype')) {
+                case self::CSV_FILE_TYPE:
+                    $content = file_get_contents($input->getArgument('filename'));
+                    $result = $this->serializer->decode($content, 'csv');
 
+                    break;
+            }
+        } else {
+            $io->error(
+                'Available filetypes are: ' .
+                $this->fileTypeList .
+                '. Given value is: "' .
+                $input->getOption('filetype') . '"'
+            );
 
-        $content = file_get_contents($input->getArgument('filename'));
-        $result = $csvEncoder->decode($content, 'csv');
+            return Command::FAILURE;
+        }
 
-
+//        $output->writeln('Parameter filetype = ' . $input->getOption('filetype'));
+//        $output->writeln('Parameter test = ' . $input->getOption('test'));
 
         $itemsProcessed = 0;
         $itemsSucceeded = 0;
         $itemsSkipped = 0;
 
-
         if ($input->getOption('test')) {
-            $output->writeln("\n\n\nRunning in test mode no data will be saved in DB.\n\n\n");
+            $io->warning('Running in test mode no data will be saved in DB.');
         }
 
-        foreach ($result as $item){
-            $itemsProcessed ++;
+        $errorArray = [];
+
+        foreach ($result as $item) {
+            $itemsProcessed++;
             if ($input->getOption('test')) {
                 $saveResult = \App\Helpers\Validators\ProductCsvValidator::validate($item);
                 if ($saveResult) {
                     $itemsSkipped++;
-                    $output->writeln('Item Product_Code = ' .
+                    $errorArray[] = ['Item Product_Code = ' .
                         ($item['Product Code'] ?? '') . ' Product_Name = ' .
                         ($item['Product Name'] ?? '') . ' Product_Description = ' .
-                        ($item['Product Description'] ?? '') .
+                        ($item['Product Description'] ?? ''),
                         ' Was not saved to database because of the next errors: ' .
-                        $saveResult['error'] . "\n\n" );
+                        $saveResult['error'], ];
                 } else {
                     $itemsSucceeded++;
                 }
-
             } else {
-                $saveResult = $productCsvSaver->save($item);
+                $saveResult = $this->productCsvSaver->save($item);
                 if ($saveResult) {
                     $itemsSkipped++;
-                    $output->writeln('Item Product_Code = ' .
+                    $errorArray[] = ['Item Product_Code = ' .
                         ($item['Product Code'] ?? '') .
                         ' Product_Name = ' .
                         ($item['Product Name'] ?? '') .
                         ' Product_Description = ' .
-                        ($item['Product Description'] ?? '') .
+                        ($item['Product Description'] ?? ''),
                         ' Was not saved to database because of the next errors: ' .
-                        $saveResult['error'] );
+                        $saveResult['error'], ];
                 } else {
                     $itemsSucceeded++;
                 }
             }
-
         }
 
-        $output->writeln('Items processed = ' . $itemsProcessed);
-        $output->writeln('Items succeeded = ' . $itemsSucceeded);
-        $output->writeln('Items skipped = ' . $itemsSkipped);
+        $io->table(['Product', 'Errors'], $errorArray);
 
-        $output->writeln('Success');
+        $io->info([
+            'Items processed = ' . $itemsProcessed,
+            'Items succeeded = ' . $itemsSucceeded,
+            'Items skipped = ' . $itemsSkipped,
+        ]);
+
         return Command::SUCCESS;
     }
-
 }

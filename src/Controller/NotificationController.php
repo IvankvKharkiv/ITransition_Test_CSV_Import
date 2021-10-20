@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Component\Routing\Annotation\Route;
 
 class NotificationController extends AbstractController
 {
-
     /**
      * @Route("/invoice/create")
      */
-    public function create(NotifierInterface $notifier) : Response
+    public function create(NotifierInterface $notifier): Response
     {
         // ...
 
@@ -26,7 +27,7 @@ class NotificationController extends AbstractController
 
         // The receiver of the Notification
         $recipient = new Recipient(
-            "testmail@testmail.com"
+            'testmail@testmail.com'
         );
 
         // Send the notification to the recipient
@@ -34,12 +35,8 @@ class NotificationController extends AbstractController
 
         // ...
 
-
-
         return new Response(
             '<html><body>First Response</body></html>'
         );
-
     }
-
 }

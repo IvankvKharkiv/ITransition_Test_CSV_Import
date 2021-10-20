@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Tblproductdata
+ * ProductData.
  *
  * @ORM\Table(name="tblProductData", uniqueConstraints={@ORM\UniqueConstraint(name="strProductCode", columns={"strProductCode"})})
  * @ORM\Entity
  */
-class Tblproductdata
+class ProductData
 {
     /**
      * @var int
@@ -19,143 +21,143 @@ class Tblproductdata
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $intproductdataid;
+    private $id;
 
     /**
      * @var string
      *
      * @ORM\Column(name="strProductName", type="string", length=50, nullable=false)
      */
-    private $strproductname;
+    private string $name;
 
     /**
      * @var string
      *
      * @ORM\Column(name="strProductDesc", type="string", length=255, nullable=false)
      */
-    private $strproductdesc;
+    private string $description;
 
     /**
      * @var string
      *
      * @ORM\Column(name="strProductCode", type="string", length=10, nullable=false)
      */
-    private $strproductcode;
+    private string $productCode;
 
     /**
      * @var \DateTime|null
      *
      * @ORM\Column(name="dtmAdded", type="datetime", nullable=true)
      */
-    private $dtmadded;
+    private ?\DateTime $dateAdded;
 
     /**
      * @var \DateTime|null
      *
      * @ORM\Column(name="dtmDiscontinued", type="datetime", nullable=true)
      */
-    private $dtmdiscontinued;
+    private ?\DateTime $discontinued;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="stmTimestamp", type="datetime", nullable=false, options={"default"="CURRENT_TIMESTAMP"})
      */
-    private $stmtimestamp = 'CURRENT_TIMESTAMP';
+    private $timestamp = 'CURRENT_TIMESTAMP';
 
     /**
      * @ORM\Column(type="decimal", precision=10, scale=2, nullable=true)
      */
-    private $price_gbp;
+    private float $price_gbp;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $stock;
+    private ?int $stock;
 
-    public function getIntproductdataid(): ?int
+    public function getId(): ?int
     {
-        return $this->intproductdataid;
+        return $this->id;
     }
 
-    public function getStrproductname(): ?string
+    public function getName(): ?string
     {
-        return $this->strproductname;
+        return $this->name;
     }
 
-    public function setStrproductname(string $strproductname): self
+    public function setName(string $name): self
     {
-        $this->strproductname = $strproductname;
+        $this->name = $name;
 
         return $this;
     }
 
-    public function getStrproductdesc(): ?string
+    public function getDescription(): ?string
     {
-        return $this->strproductdesc;
+        return $this->description;
     }
 
-    public function setStrproductdesc(string $strproductdesc): self
+    public function setDescription(string $description): self
     {
-        $this->strproductdesc = $strproductdesc;
+        $this->description = $description;
 
         return $this;
     }
 
-    public function getStrproductcode(): ?string
+    public function getProductCode(): ?string
     {
-        return $this->strproductcode;
+        return $this->productCode;
     }
 
-    public function setStrproductcode(string $strproductcode): self
+    public function setProductCode(string $productCode): self
     {
-        $this->strproductcode = $strproductcode;
+        $this->productCode = $productCode;
 
         return $this;
     }
 
-    public function getDtmadded(): ?\DateTimeInterface
+    public function getDateAdded(): ?\DateTimeInterface
     {
-        return $this->dtmadded;
+        return $this->dateAdded;
     }
 
-    public function setDtmadded(?\DateTimeInterface $dtmadded): self
+    public function setDateAdded(?\DateTimeInterface $dateAdded): self
     {
-        $this->dtmadded = $dtmadded;
+        $this->dateAdded = $dateAdded;
 
         return $this;
     }
 
-    public function getDtmdiscontinued(): ?\DateTimeInterface
+    public function getDiscontinued(): ?\DateTimeInterface
     {
-        return $this->dtmdiscontinued;
+        return $this->discontinued;
     }
 
-    public function setDtmdiscontinued(?\DateTimeInterface $dtmdiscontinued): self
+    public function setDiscontinued(?\DateTimeInterface $discontinued): self
     {
-        $this->dtmdiscontinued = $dtmdiscontinued;
+        $this->discontinued = $discontinued;
 
         return $this;
     }
 
-    public function getStmtimestamp(): ?\DateTimeInterface
+    public function getTimestamp(): ?\DateTimeInterface
     {
-        return $this->stmtimestamp;
+        return $this->timestamp;
     }
 
-    public function setStmtimestamp(\DateTimeInterface $stmtimestamp): self
+    public function setTimestamp(\DateTimeInterface $timestamp): self
     {
-        $this->stmtimestamp = $stmtimestamp;
+        $this->timestamp = $timestamp;
 
         return $this;
     }
 
-    public function getPriceGbp(): ?string
+    public function getPriceGbp(): ?float
     {
         return $this->price_gbp;
     }
 
-    public function setPriceGbp(?string $price_gbp): self
+    public function setPriceGbp(?float $price_gbp): self
     {
         $this->price_gbp = $price_gbp;
 
@@ -173,5 +175,4 @@ class Tblproductdata
 
         return $this;
     }
-
 }
