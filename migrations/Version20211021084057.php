@@ -10,11 +10,11 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20211013202236 extends AbstractMigration
+final class Version20211021084057 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Adding "price_gbp" and "stock" fields to exiting table "tblProductData".';
     }
 
     public function up(Schema $schema): void
