@@ -54,7 +54,7 @@ class Product
 
     public static function loadValidatorMetadata(ClassMetadata $metadata)
     {
-        $metadata->addGetterConstraint('BothPriceStockInValid', new Assert\IsFalse(['message' => 'Both price must be more that $5 and quantity must be more than 10pcs in stock']));
+        $metadata->addGetterConstraint('BothPriceStockInValid', new Assert\IsFalse(['message' => 'Both price must be more that $5 and quantity must be more than 10pcs in stock.']));
     }
 
     /**

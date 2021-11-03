@@ -26,7 +26,7 @@ class ProductDataCreator
         try {
             $currentDate = new \DateTime('now', new \DateTimeZone('GMT'));
             if ($productDto->discontinued) {
-                $productDto->setDiscontinued($currentDate->getTimestamp());
+                $productDto->setDiscontinued($currentDate->format(\DateTimeInterface::ATOM));
             } else {
                 $productDto->setDiscontinued(null);
             }
@@ -55,7 +55,7 @@ class ProductDataCreator
 
             return $productData;
         } catch (\Exception $e) {
-            throw new \LogicException('It always must be possible to create product data from importing one. Current error: ' . $e->getMessage());
+            throw new \LogicException('It always must be possible to create product data from importing one. ' . $productDto->getProductCode() . ' Current error: ' . $e->getTraceAsString());
         }
     }
 }

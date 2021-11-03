@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="code", columns={"code"})})
  * @ORM\Entity(repositoryClass=CurrencyRepository::class)
  */
 class Currency
