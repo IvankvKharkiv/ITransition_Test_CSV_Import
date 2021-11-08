@@ -90,12 +90,12 @@ class ProductData
         $this->dateAdded = $dateAdded ?: $this->timestamp;
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -103,6 +103,7 @@ class ProductData
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -114,10 +115,11 @@ class ProductData
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
-    public function getProductCode(): ?string
+    public function getProductCode(): string
     {
         return $this->productCode;
     }
@@ -125,6 +127,7 @@ class ProductData
     public function setProductCode(string $productCode): self
     {
         $this->productCode = $productCode;
+
         return $this;
     }
 
@@ -136,6 +139,7 @@ class ProductData
     public function setDateAdded(?\DateTimeInterface $dateAdded): self
     {
         $this->dateAdded = $dateAdded;
+
         return $this;
     }
 
@@ -147,6 +151,7 @@ class ProductData
     public function setDiscontinued(?\DateTimeInterface $discontinued): self
     {
         $this->discontinued = $discontinued;
+
         return $this;
     }
 
@@ -158,6 +163,7 @@ class ProductData
     public function setTimestamp(\DateTime $timestamp): self
     {
         $this->timestamp = $timestamp;
+
         return $this;
     }
 
@@ -169,6 +175,7 @@ class ProductData
     public function setStock(?int $stock): self
     {
         $this->stock = $stock;
+
         return $this;
     }
 
@@ -192,11 +199,7 @@ class ProductData
 
     public function removeProductPrice(ProductPrice $productPrice): self
     {
-        if ($this->productPrices->removeElement($productPrice)) {
-            if ($productPrice->getProduct() === $this) {
-                $productPrice->setProduct(null);
-            }
-        }
+        $this->productPrices->removeElement($productPrice);
 
         return $this;
     }

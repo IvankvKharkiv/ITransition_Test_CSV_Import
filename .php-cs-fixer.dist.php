@@ -17,6 +17,7 @@ return (new PhpCsFixer\Config())
         'no_superfluous_phpdoc_tags' => false,
         'increment_style' => ['style' => 'post'],
         'declare_strict_types' => true,
+        'class_attributes_separation' => true,
         'concat_space' => ['spacing' => 'one'],
         'ordered_class_elements' => [
             'order' => [

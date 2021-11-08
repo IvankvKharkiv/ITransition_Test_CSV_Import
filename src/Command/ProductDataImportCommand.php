@@ -7,6 +7,7 @@ namespace App\Command;
 use App\DTO\csv\Product as CsvDtoProduct;
 use App\Service\DataImport\ProductDataImporter;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table as SymfonyConsoleTable;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,13 +20,14 @@ class ProductDataImportCommand extends Command
 {
     public const CSV_FILE_TYPE = 'csv';
 
-    public static array $availableFileTypes = [
+    public const SUPPORTED_FORMATS = [
         self::CSV_FILE_TYPE,
     ];
 
     protected static $defaultName = 'app:product-data:import';
-    private string $fileTypeList = '';
+
     private SerializerInterface $serializer;
+
     private ProductDataImporter $productDataImporter;
 
     public function __construct(
@@ -35,9 +37,6 @@ class ProductDataImportCommand extends Command
         $this->serializer = $serializer;
         $this->productDataImporter = $productDataImporter;
         parent::__construct();
-        foreach (self::$availableFileTypes as $fileType) {
-            $this->fileTypeList = $this->fileTypeList . ($this->fileTypeList ? ', ' : '') . $fileType;
-        }
     }
 
     protected function configure(): void
@@ -58,7 +57,7 @@ class ProductDataImportCommand extends Command
             'filetype',
             'ft',
             InputOption::VALUE_REQUIRED,
-            'Specify file type. Available file types: ' . $this->fileTypeList,
+            'Specify file type. Available file types: ' . implode(', ', self::SUPPORTED_FORMATS),
             'csv'
         );
     }
@@ -77,36 +76,10 @@ class ProductDataImportCommand extends Command
             $io->warning('Running in test mode no data will be saved in DB.');
         }
 
-        if (in_array($input->getOption('filetype'), self::$availableFileTypes)) {
-            $content = file_get_contents($input->getArgument('filename'));
-
-            $productDtoArr = $this->serializer->deserialize(
-                $content,
-                CsvDtoProduct::class . '[]',
-                $input->getOption('filetype')
-            );
-
-            foreach ($productDtoArr as $productDtoItem) {
-                $itemsProcessed++;
-
-                try {
-                    $productData = null;
-                    $productData = $this->productDataImporter->import($productDtoItem, $input->getOption('test'));
-                    if ($productData) {
-                        $itemsSucceeded++;
-                    }
-                } catch (ValidationFailedException $e) {
-                    $itemsSkipped++;
-                    $validationErrorList[] = $e;
-                } catch (\Exception $e) {
-                    $itemsSkipped++;
-                    $difErrorList[] = [$e->getMessage()];
-                }
-            }
-        } else {
+        if (!in_array($input->getOption('filetype'), self::SUPPORTED_FORMATS)) {
             $io->error(
                 'Available filetypes are: ' .
-                $this->fileTypeList .
+                implode(', ', self::SUPPORTED_FORMATS) .
                 '. Given value is: "' .
                 $input->getOption('filetype') . '"'
             );
@@ -114,18 +87,52 @@ class ProductDataImportCommand extends Command
             return Command::FAILURE;
         }
 
-        $finalErrorList = [];
-        foreach ($validationErrorList as $validationError) {
-            foreach ($validationError->getViolations() as $violation) {
-                $finalErrorList[] = [
-                    $violation->getRoot()->getProductCode() . ' ' . $violation->getRoot()->getName(),
-                    wordwrap($violation->getMessage() . ' Property: ' . $violation->getPropertyPath()),
-                ];
+        $content = file_get_contents($input->getArgument('filename'));
+
+        $productDto = $this->serializer->deserialize(
+            $content,
+            CsvDtoProduct::class . '[]',
+            $input->getOption('filetype')
+        );
+
+        $validationErrorTable = new SymfonyConsoleTable($output);
+        $validationErrorTable
+            ->setHeaderTitle('Validation Errors')
+            ->setHeaders([['Product', 'Validation Errors']])
+            ->setFooterTitle('End of Validation Error Table');
+
+        $otherErrorTable = new SymfonyConsoleTable($output);
+        $otherErrorTable
+            ->setHeaderTitle('Other errors')
+            ->setHeaders(['Other errors'])
+            ->setFooterTitle('End of other Error Table');
+
+        foreach ($productDto as $productDtoItem) {
+            $itemsProcessed++;
+
+            try {
+                $this->productDataImporter->import($productDtoItem, $input->getOption('test'));
+                $itemsSucceeded++;
+            } catch (ValidationFailedException $e) {
+                $itemsSkipped++;
+                $validationErrorList[] = $e;
+
+                foreach ($e->getViolations() as $violation) {
+                    $validationErrorTable->addRow([
+                        $violation->getRoot()->getProductCode() . ' ' . $violation->getRoot()->getName(),
+                        wordwrap($violation->getMessage() . ' Property: ' . $violation->getPropertyPath()),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                $itemsSkipped++;
+                $difErrorList[] = [$e->getMessage()];
+
+                $otherErrorTable->addRow([$e->getMessage()]);
             }
         }
 
-        $io->table(['Product', 'Validation Errors'], $finalErrorList);
-        $io->table(['Other Errors'], $difErrorList);
+        $validationErrorTable->render();
+        $otherErrorTable->render();
 
         $io->info([
             'Items processed = ' . $itemsProcessed,

@@ -26,7 +26,7 @@ class ProductPrice
     private $product;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Currency::class, inversedBy="productPrices")
+     * @ORM\ManyToOne(targetEntity=Currency::class)
      * @ORM\JoinColumn(nullable=false)
      */
     private $currency;
@@ -36,23 +36,31 @@ class ProductPrice
      */
     private $price;
 
-    public function getId(): ?int
+    public function __construct(ProductData $product, Currency $currency, float $price)
+    {
+        $this->setCurrency($currency);
+        $this->setProduct($product);
+        $this->setPrice($price);
+    }
+
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getProduct(): ?ProductData
+    public function getProduct(): ProductData
     {
         return $this->product;
     }
 
-    public function setProduct(?ProductData $product): self
+    public function setProduct(ProductData $product): self
     {
         $this->product = $product;
+
         return $this;
     }
 
-    public function getCurrency(): ?Currency
+    public function getCurrency(): Currency
     {
         return $this->currency;
     }
@@ -60,10 +68,11 @@ class ProductPrice
     public function setCurrency(?Currency $currency): self
     {
         $this->currency = $currency;
+
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): float
     {
         return $this->price;
     }
@@ -71,6 +80,7 @@ class ProductPrice
     public function setPrice(float $price): self
     {
         $this->price = $price;
+
         return $this;
     }
 }

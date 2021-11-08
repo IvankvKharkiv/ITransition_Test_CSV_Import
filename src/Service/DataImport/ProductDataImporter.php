@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\DataImport;
 
 use App\DTO\csv\Product as ProductDto;
-use App\Entity\ProductData;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
@@ -14,8 +13,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class ProductDataImporter
 {
     private ValidatorInterface $validator;
+
     private EntityManagerInterface $entityManager;
+
     private ManagerRegistry $registry;
+
     private ProductDataCreator $productDataCreator;
 
     public function __construct(
@@ -30,7 +32,7 @@ class ProductDataImporter
         $this->productDataCreator = $productDataCreator;
     }
 
-    public function import(ProductDto $productDto, bool $test = null): ProductData
+    public function import(ProductDto $productDto, bool $testMode = null): void
     {
         if (!$productDto->getStock()) {
             $productDto->setStock(0);
@@ -50,11 +52,9 @@ class ProductDataImporter
 
         $productData = $this->productDataCreator->createFromImportingData($productDto);
 
-        if (!$test) {
+        if (!$testMode) {
             $this->entityManager->persist($productData);
             $this->entityManager->flush();
         }
-
-        return $productData;
     }
 }

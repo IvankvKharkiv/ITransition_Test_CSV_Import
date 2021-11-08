@@ -32,22 +32,17 @@ class Currency
      */
     private $description;
 
-    /**
-     * @ORM\OneToMany(targetEntity=ProductPrice::class, mappedBy="currency", orphanRemoval=true)
-     */
-    private $productPrices;
-
     public function __construct()
     {
         $this->productPrices = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -55,6 +50,7 @@ class Currency
     public function setCode(string $code): self
     {
         $this->code = $code;
+
         return $this;
     }
 
@@ -66,6 +62,7 @@ class Currency
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 

@@ -12,9 +12,11 @@
         "doctrine/doctrine-bundle": "^2.4",
         "doctrine/doctrine-migrations-bundle": "^3.1",
         "doctrine/orm": "^2.10",
+        "houseofapis/currencyapi": "^1.0",
         "phpunit/phpunit": "^9.5",
         "symfony/console": "5.3.*",
         "symfony/dotenv": "5.3.*",
+        "symfony/expression-language": "5.3.*",
         "symfony/flex": "^1.3.1",
         "symfony/framework-bundle": "5.3.*",
         "symfony/mailer": "5.3.*",
@@ -74,7 +76,12 @@
         "test:database:recreate": [
             "APP_ENV=test bin/console doctrine:database:drop --if-exists -f",
             "APP_ENV=test bin/console doctrine:database:create --if-not-exists",
-            "APP_ENV=test bin/console doctrine:schema:create"
+            "APP_ENV=test bin/console doctrine:migration:migrate"
+        ],
+        "dev:database:recreate": [
+            "bin/console doctrine:database:drop --if-exists -f",
+            "bin/console doctrine:database:create --if-not-exists",
+            "bin/console doctrine:migration:migrate"
         ]
     },
     "conflict": {

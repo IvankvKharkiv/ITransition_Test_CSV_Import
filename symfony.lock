@@ -97,6 +97,9 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.5"
     },
+    "houseofapis/currencyapi": {
+        "version": "v1.0.1"
+    },
     "laminas/laminas-code": {
         "version": "4.4.3"
     },
@@ -260,6 +263,9 @@
     },
     "symfony/event-dispatcher-contracts": {
         "version": "v2.4.0"
+    },
+    "symfony/expression-language": {
+        "version": "v5.3.7"
     },
     "symfony/filesystem": {
         "version": "v5.3.4"
